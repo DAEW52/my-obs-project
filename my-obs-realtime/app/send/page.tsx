@@ -66,10 +66,11 @@ export default function SendPage() {
 
       const imageData = await cloudRes.json();
 
-      // 2. ✅ บันทึกข้อมูลเข้า Supabase
-      const { error } = await supabase.from("waiting_list").insert([
+      // 2. ✅ ส่งไปหาแอดมิน (display_queue) รอ approve ก่อนขึ้นจอ
+      const { error } = await supabase.from("display_queue").insert([
         {
           table_no: table.trim(),
+          status: "pending",
           social_type: socialType,
           social_id: socialId.trim(),
           message: msg.trim(),

@@ -42,6 +42,15 @@ const SocialIcon = ({ type }: { type: string }) => {
     );
   }
 
+  if (t === "line") {
+    return (
+      <svg width={s} height={s} viewBox="0 0 48 48">
+        <path fill="#00c300" d="M12.5,42h23c3.59,0,6.5-2.91,6.5-6.5v-23C42,8.91,39.09,6,35.5,6h-23C8.91,6,6,8.91,6,12.5v23C6,39.09,8.91,42,12.5,42z"/>
+        <path fill="#fff" d="M37.113,22.417c0-5.865-5.88-10.637-13.107-10.637s-13.108,4.772-13.108,10.637c0,5.258,4.663,9.662,10.962,10.495c0.427,0.092,1.008,0.282,1.155,0.646c0.132,0.331,0.086,0.85,0.042,1.185c0,0-0.153,0.925-0.187,1.122c-0.057,0.331-0.263,1.296,1.135,0.707c1.399-0.589,7.548-4.445,10.298-7.611h-0.001C36.203,26.879,37.113,24.764,37.113,22.417z"/>
+      </svg>
+    );
+  }
+
   return <div className="w-[40px] h-[40px] bg-white/20 rounded-full" />;
 };
 
@@ -63,18 +72,27 @@ export default function DisplayPage() {
   });
 
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const activeSlotRef = useRef(0);
+
+  // ---------- fetch เฉพาะ approved ----------
+  const fetchApproved = async () => {
+    const { data } = await supabase
+      .from("display_queue")
+      .select("*")
+      // ✅ กรองเฉพาะ approved เท่านั้น
+      .eq("status", "approved")
+      .order("created_at", { ascending: true });
+
+    return data || [];
+  };
 
   // ---------- init + realtime ----------
   useEffect(() => {
     setUploadUrl(window.location.origin);
 
     (async () => {
-      const { data } = await supabase
-        .from("display_queue")
-        .select("*")
-        .order("created_at", { ascending: true });
-
-      if (data && data.length) {
+      const data = await fetchApproved();
+      if (data.length) {
         dataRef.current.queue = data;
         startLoop();
       }
@@ -84,11 +102,56 @@ export default function DisplayPage() {
       .channel("display-sync")
       .on(
         "postgres_changes",
+        // ✅ ฟัง UPDATE ด้วย (ตอน admin approve)
+        { event: "UPDATE", schema: "public", table: "display_queue" },
+        (payload) => {
+          const updated = payload.new;
+          // ✅ เพิ่มเข้า queue เฉพาะถ้า status เป็น approved
+          if (updated.status === "approved") {
+            const { queue, currentIndex } = dataRef.current;
+            // ไม่เพิ่มซ้ำ
+            const exists = queue.find((q) => q.id === updated.id);
+            if (!exists) {
+              queue.splice(currentIndex + 1, 0, updated);
+              // ถ้ายังไม่มีอะไรแสดงอยู่ ให้เริ่มเลย
+              if (!dataRef.current.queue.length || currentIndex === -1) {
+                startLoop();
+              }
+            }
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
+        { event: "DELETE", schema: "public", table: "display_queue" },
+        (payload) => {
+          // ✅ ลบออกจาก queue ทันที ไม่รอ loop
+          const deletedId = payload.old?.id;
+          if (deletedId) {
+            dataRef.current.queue = dataRef.current.queue.filter(q => q.id !== deletedId);
+            // ถ้ารูปที่กำลังแสดงอยู่ถูกลบ ให้ข้ามไปรูปถัดไป
+            const current = dataRef.current.queue[dataRef.current.currentIndex];
+            if (!current || current.id === deletedId) {
+              if (timerRef.current) clearTimeout(timerRef.current);
+              dataRef.current.currentIndex = Math.max(0, dataRef.current.currentIndex - 1);
+              if (dataRef.current.queue.length > 0) startLoop();
+              else {
+                setCurrentContent(null);
+                setIsVisible(false);
+              }
+            }
+          }
+        }
+      )
+      .on(
+        "postgres_changes",
         { event: "INSERT", schema: "public", table: "display_queue" },
         (payload) => {
           const newItem = payload.new;
-          const { queue, currentIndex } = dataRef.current;
-          queue.splice(currentIndex + 1, 0, newItem);
+          if (newItem.status === "approved") {
+            const { queue, currentIndex } = dataRef.current;
+            queue.splice(currentIndex + 1, 0, newItem);
+          }
         }
       )
       .subscribe();
@@ -97,6 +160,7 @@ export default function DisplayPage() {
       supabase.removeChannel(channel);
       if (timerRef.current) clearTimeout(timerRef.current);
     };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // ---------- loop ----------
@@ -112,15 +176,16 @@ export default function DisplayPage() {
     setIsVisible(false);
 
     setTimeout(() => {
-      const nextSlot = (activeSlot + 1) % 2;
+      const nextSlot = (activeSlotRef.current + 1) % 2;
 
       setImageSlots((prev) => {
         const n = [...prev];
         n[nextSlot] = { src: item.image_url, visible: true };
-        n[activeSlot] = { ...n[activeSlot], visible: false };
+        n[activeSlotRef.current] = { ...n[activeSlotRef.current], visible: false };
         return n;
       });
 
+      activeSlotRef.current = nextSlot;
       setActiveSlot(nextSlot);
       setCurrentContent(item);
       setCountdown(15);
@@ -150,34 +215,20 @@ export default function DisplayPage() {
 
   return (
     <div className="relative w-screen h-screen overflow-hidden bg-black">
-      <style>{`
-        .slot {
-          position:absolute;
-          inset:0;
-          transition:opacity 1.5s ease-in-out;
-          z-index:1;
-        }
-      `}</style>
-
-      {/* ---------- IMAGE (ไม่สูงต่ำ / ไม่บังข้อความ) ---------- */}
       {/* ---------- IMAGE FULLSCREEN ---------- */}
-{imageSlots.map((s, i) => (
-  <div
-    key={i}
-    className="absolute inset-0 transition-opacity duration-[1500ms]"
-    style={{ opacity: s.visible ? 1 : 0, zIndex: 1 }}
-  >
-    {s.src && (
-      <img
-        src={s.src}
-        alt=""
-        className="w-full h-full object-cover"
-      />
-    )}
-  </div>
-))}
+      {imageSlots.map((s, i) => (
+        <div
+          key={i}
+          className="absolute inset-0 transition-opacity duration-[1500ms]"
+          style={{ opacity: s.visible ? 1 : 0, zIndex: 1 }}
+        >
+          {s.src && (
+            <img src={s.src} alt="" className="w-full h-full object-cover" />
+          )}
+        </div>
+      ))}
 
-      {/* ---------- OVERLAY (อยู่บนรูป) ---------- */}
+      {/* ---------- OVERLAY ---------- */}
       <div
         className={`absolute inset-0 z-10 transition-opacity duration-1000 ${
           isVisible ? "opacity-100" : "opacity-0"
@@ -214,9 +265,9 @@ export default function DisplayPage() {
           </div>
 
           <div className="bg-white p-3 rounded-[1.2rem] border-2 border-yellow-500 shadow-lg">
-            {uploadUrl && <QRCode value={uploadUrl} size={110} />}
+            {uploadUrl && <QRCode value={`${uploadUrl}/send`} size={110} />}
             <p className="text-black text-center font-black mt-1 text-[10px]">
-              SCAN TO ME
+              SCAN TO SEND
             </p>
           </div>
         </div>
