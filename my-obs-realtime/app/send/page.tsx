@@ -1,6 +1,8 @@
 "use client";
-import { useState } from 'react';
-import { supabase } from "@/lib/supabase";
+import { useState } from "react";
+import { getSupabase } from "@/lib/supabase";
+
+const supabase = getSupabase(); // ✅ เพิ่มบรรทัดนี้
 
 export default function SendPage() {
   const [msg, setMsg] = useState("");
