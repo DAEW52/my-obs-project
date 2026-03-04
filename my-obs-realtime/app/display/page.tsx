@@ -1,8 +1,9 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { supabase } from "@/lib/supabase";
 import dynamic from "next/dynamic";
+import { getSupabase } from "@/lib/supabase";
+const supabase = getSupabase();
 
 const QRCode = dynamic(() => import("react-qr-code"), { ssr: false });
 
