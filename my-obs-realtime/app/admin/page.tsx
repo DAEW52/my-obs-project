@@ -3,27 +3,26 @@
 import { useEffect, useState } from "react";
 import { createClient } from "@supabase/supabase-js";
 
-// ตรวจสอบ Environment Variables
+// 1. เพิ่ม ! เพื่อยืนยันกับ TypeScript ว่ามีค่าแน่นอน (ป้องกัน Build Error)
 const supabase = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+  process.env.NEXT_PUBLIC_SUPABASE_URL!,
+  process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
 );
 
 export default function AdminPage() {
-  const [session, setSession] = useState(null);
+  // 2. ระบุ Type พื้นฐานเพื่อลดสีแดง
+  const [session, setSession] = useState<any>(null);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [messages, setMessages] = useState([]);
+  const [messages, setMessages] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    // 1. ตรวจสอบ Session เมื่อโหลดหน้า
     supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setLoading(false);
     });
 
-    // 2. ติดตามการเปลี่ยนแปลงสถานะ Login/Logout
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -48,7 +47,7 @@ export default function AdminPage() {
     }
   };
 
-  const handleLogin = async (e) => {
+  const handleLogin = async (e: any) => {
     e.preventDefault();
     const { error } = await supabase.auth.signInWithPassword({
       email,
@@ -62,7 +61,7 @@ export default function AdminPage() {
     await supabase.auth.signOut();
   };
 
-  const approveMessage = async (id) => {
+  const approveMessage = async (id: any) => {
     const { error } = await supabase
       .from("display_queue")
       .update({ approved: true })
@@ -71,7 +70,7 @@ export default function AdminPage() {
     if (!error) fetchMessages();
   };
 
-  const deleteMessage = async (id) => {
+  const deleteMessage = async (id: any) => {
     if (confirm("คุณแน่ใจหรือไม่ที่จะลบข้อความนี้?")) {
       const { error } = await supabase.from("display_queue").delete().eq("id", id);
       if (!error) fetchMessages();
@@ -96,7 +95,7 @@ export default function AdminPage() {
           </h2>
           <form onSubmit={handleLogin} className="space-y-5">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Email Address</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 text-left w-full">Email Address</label>
               <input
                 type="email"
                 required
@@ -107,7 +106,7 @@ export default function AdminPage() {
               />
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1">Password</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1 ml-1 text-left w-full">Password</label>
               <input
                 type="password"
                 required
@@ -132,9 +131,8 @@ export default function AdminPage() {
   // ================= 2. หน้า DASHBOARD =================
   return (
     <div className="min-h-screen bg-gray-50 pb-20">
-      {/* Header */}
       <nav className="bg-white shadow-sm border-b sticky top-0 z-10">
-        <div className="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center">
+        <div className="max-w-5xl mx-auto px-4 h-16 flex justify-between items-center text-black">
           <h1 className="text-xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-600 to-indigo-600">
             Admin Dashboard
           </h1>
@@ -148,15 +146,14 @@ export default function AdminPage() {
       </nav>
 
       <main className="max-w-4xl mx-auto p-4 md:p-8">
-        <div className="flex items-center justify-between mb-8 text-black">
+        <div className="flex items-center justify-between mb-8 text-black text-left">
           <div>
             <h2 className="text-2xl font-bold">จัดการคิวข้อความ</h2>
-            <p className="text-gray-500 text-sm italic">ล็อคอินโดย: {session.user.email}</p>
+            <p className="text-gray-500 text-sm italic">ล็อคอินโดย: {session.user?.email}</p>
           </div>
           <button 
             onClick={fetchMessages}
             className="p-2 hover:bg-gray-200 rounded-full transition-colors"
-            title="รีเฟรชข้อมูล"
           >
             🔄
           </button>
@@ -168,10 +165,10 @@ export default function AdminPage() {
               ไม่มีข้อความใหม่ในขณะนี้
             </div>
           ) : (
-            messages.map((msg) => (
+            messages.map((msg: any) => (
               <div
                 key={msg.id}
-                className={`bg-white p-6 rounded-2xl shadow-sm border ${
+                className={`bg-white p-6 rounded-2xl shadow-sm border text-left ${
                   msg.approved ? "border-green-100" : "border-gray-200"
                 } hover:shadow-md transition-shadow`}
               >
