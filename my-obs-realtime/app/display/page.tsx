@@ -222,7 +222,7 @@ export default function DisplayPage() {
 
           {/* Message (Black-Gold Style) */}
           <div className="absolute left-1/2 top-2/3 -translate-x-1/2 text-center max-w-[80%] w-full">
-            <h1 className="text-[4vw] font-black italic text-white leading-tight
+            <h1 className="text-[7vw] font-black italic text-white leading-tight
               drop-shadow-[0_6px_20px_rgba(0,0,0,1)]
               drop-shadow-[0_0_30px_rgba(255,215,0,0.3)]"
               style={{ fontFamily: 'Sarabun, sans-serif' }}>
@@ -231,7 +231,7 @@ export default function DisplayPage() {
           </div>
 
           {/* Footer Info */}
-          <div className="absolute bottom-10 left-10 right-10 flex items-end justify-between">
+          <div className="absolute bottom-30 left-10 right-10 flex items-end justify-between">
             <div className="bg-slate-900/90 p-6 px-10 rounded-[1.5rem] border-l-[12px] border-yellow-500 shadow-2xl">
               <div className="flex items-center gap-5">
                 <SocialIcon type={currentContent.social_type} />
@@ -245,7 +245,7 @@ export default function DisplayPage() {
             </div>
 
             {/* QR Code Section */}
-            <div className="bg-white p-4 rounded-[1.5rem] border-2 border-yellow-500 shadow-lg">
+            <div className="bg-white p-4 rounded-[2.5rem] border-4 border-yellow-500 shadow-lg">
               {uploadUrl && <QRCode value={`${uploadUrl}/send`} size={140} />}
               <p className="text-black text-center font-black mt-1 text-xs">
                 SCAN TO SEND
