@@ -65,7 +65,7 @@ const SocialIcon = ({ type }: { type: string }) => {
 
 export default function DisplayPage() {
   const [uploadUrl, setUploadUrl] = useState('');
-  const [const [currentContent, setCurrentContent] = useState<any>(null);
+  const [currentContent, setCurrentContent] = useState<any>(null);
   const [isIdle, setIsIdle] = useState(true);
   const [countdown, setCountdown] = useState(0);
   const [imageSlots, setImageSlots] = useState([
@@ -75,18 +75,19 @@ export default function DisplayPage() {
   const [activeSlot, setActiveSlot] = useState(0);
 
   const dataRef = useRef<{
-  approvedList: any[];
-  newItemsQueue: any[];
-  currentIndex: number;
-  ids: Set<any>;
-  lastIndexBeforeQueue: number | null;
-}>({
-  approvedList: [],
-  newItemsQueue: [],
-  currentIndex: -1,
-  ids: new Set(),
-  lastIndexBeforeQueue: null,
-});
+    approvedList: any[];
+    newItemsQueue: any[];
+    currentIndex: number;
+    ids: Set<any>;
+    lastIndexBeforeQueue: number | null;
+  }>({
+    approvedList: [],
+    newItemsQueue: [],
+    currentIndex: -1,
+    ids: new Set(),
+    lastIndexBeforeQueue: null,
+  });
+
   const activeSlotRef = useRef(activeSlot);
   useEffect(() => { activeSlotRef.current = activeSlot; }, [activeSlot]);
 
@@ -198,15 +199,11 @@ export default function DisplayPage() {
         .image-slot img {
           width: 100%; height: 100%; object-fit: cover;
         }
-
-        /* gradient overlay เบาๆ บนรูป */
         .image-slot::after {
           content: '';
           position: absolute; inset: 0;
-          background:
-            linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.3) 100%);
+          background: linear-gradient(to top, rgba(0,0,0,0.85) 0%, rgba(0,0,0,0.2) 50%, rgba(0,0,0,0.3) 100%);
         }
-
         .content-overlay {
           position: absolute; top: 0; left: 0;
           width: 100%; height: 100%;
@@ -255,17 +252,14 @@ export default function DisplayPage() {
         }
       `}</style>
 
-      {/* ── รูปภาพ slots ── */}
       {imageSlots.map((slot, index) => (
         <div key={index} className="image-slot" style={{ opacity: slot.visible ? 1 : 0 }}>
           {slot.src && <img src={slot.src} alt={`display-slot-${index}`} />}
         </div>
       ))}
 
-      {/* ── Content overlay ── */}
       <div key={currentContent?.id} className={`content-overlay ${currentContent ? 'visible' : ''}`}>
 
-        {/* ── IDLE screen ── */}
         {isIdle && (
           <div style={{
             width: '100%', height: '100%',
@@ -274,7 +268,6 @@ export default function DisplayPage() {
             background: 'radial-gradient(ellipse 80% 60% at 50% 50%, rgba(201,168,76,0.08) 0%, transparent 70%)',
             animation: 'idlePulse 4s ease-in-out infinite',
           }}>
-            {/* Logo วง */}
             <div style={{
               width: '140px', height: '140px', borderRadius: '50%',
               padding: '4px', overflow: 'hidden', flexShrink: 0,
@@ -288,7 +281,7 @@ export default function DisplayPage() {
               }}>
                 <img src="/logo.png" alt="Logo"
                   style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '12px' }}
-                  onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.parentElement.innerHTML='<span style="font-size:3.5rem">👑</span>'; }}
+                  onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.parentElement as HTMLElement).innerHTML='<span style="font-size:3.5rem">👑</span>'; }}
                 />
               </div>
             </div>
@@ -317,7 +310,6 @@ export default function DisplayPage() {
           </div>
         )}
 
-        {/* ── Logo มุมบนซ้าย (แสดงตลอดเวลาที่มี content) ── */}
         {currentContent && (
           <div className="logo-shimmer" style={{
             position: 'absolute', top: '1.5rem', left: '1.5rem',
@@ -341,7 +333,7 @@ export default function DisplayPage() {
               }}>
                 <img src="/logo.png" alt="Logo"
                   style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '4px' }}
-                  onError={(e) => { e.currentTarget.style.display='none'; e.currentTarget.parentElement.innerHTML='<span style="font-size:1.2rem">👑</span>'; }}
+                  onError={(e) => { e.currentTarget.style.display='none'; (e.currentTarget.parentElement as HTMLElement).innerHTML='<span style="font-size:1.2rem">👑</span>'; }}
                 />
               </div>
             </div>
@@ -357,7 +349,6 @@ export default function DisplayPage() {
           </div>
         )}
 
-        {/* ── Countdown วงกลม มุมบนขวา ── */}
         {currentContent && (
           <div style={{
             position: 'absolute', top: '1.5rem', right: '1.5rem',
@@ -374,14 +365,12 @@ export default function DisplayPage() {
           </div>
         )}
 
-        {/* ── ข้อความกลางจอ ── */}
         {currentContent && (
           <div className="message-animate" style={{
             position: 'absolute', top: '70%', left: '50%',
             transform: 'translate(-50%, -50%)', width: '85%',
             textAlign: 'center',
           }}>
-            {/* เส้นทองด้านบน */}
             <div style={{
               width: '80px', height: '2px', margin: '0 auto 1rem',
               background: 'linear-gradient(90deg, transparent, #C9A84C, transparent)',
@@ -395,7 +384,6 @@ export default function DisplayPage() {
             }}>
               "{currentContent.message}"
             </h1>
-            {/* เส้นทองด้านล่าง */}
             <div style={{
               width: '80px', height: '2px', margin: '1rem auto 0',
               background: 'linear-gradient(90deg, transparent, #C9A84C, transparent)',
@@ -403,13 +391,10 @@ export default function DisplayPage() {
           </div>
         )}
 
-        {/* ── Bottom bar ── */}
         <div style={{
           position: 'absolute', bottom: '5.5rem', left: '2rem', right: '2rem',
           display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
         }}>
-
-          {/* ซ้าย: social + โต๊ะ */}
           <div>
             {currentContent && (
               <div className="info-animate" style={{
@@ -420,13 +405,11 @@ export default function DisplayPage() {
                 padding: '18px 24px', borderRadius: '16px',
                 boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
               }}>
-                {/* เส้นทองบน */}
                 <div style={{
                   height: '1px',
                   background: 'linear-gradient(90deg, #C9A84C, transparent)',
                   marginBottom: '4px',
                 }} />
-
                 <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
                   <SocialIcon type={currentContent.social_type} />
                   <p style={{
@@ -437,7 +420,6 @@ export default function DisplayPage() {
                     {currentContent.social_id}
                   </p>
                 </div>
-
                 <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
                   <div style={{
                     width: '6px', height: '6px', borderRadius: '50%',
@@ -455,7 +437,6 @@ export default function DisplayPage() {
             )}
           </div>
 
-          {/* ขวา: QR Code */}
           <div style={{
             background: 'rgba(0,0,0,0.6)',
             backdropFilter: 'blur(12px)',
@@ -463,9 +444,7 @@ export default function DisplayPage() {
             padding: '12px', borderRadius: '16px',
             boxShadow: '0 8px 32px rgba(0,0,0,0.4)',
           }}>
-            <div style={{
-              background: 'white', padding: '8px', borderRadius: '8px',
-            }}>
+            <div style={{ background: 'white', padding: '8px', borderRadius: '8px' }}>
               {uploadUrl && <QRCode value={uploadUrl} size={140} />}
             </div>
             <p style={{
@@ -477,7 +456,6 @@ export default function DisplayPage() {
               แจกวาร์ปขึ้นจอ
             </p>
           </div>
-
         </div>
       </div>
     </div>
