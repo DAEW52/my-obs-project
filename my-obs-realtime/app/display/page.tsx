@@ -74,12 +74,18 @@ export default function DisplayPage() {
   ]);
   const [activeSlot, setActiveSlot] = useState(0);
 
-  const dataRef = useRef({
-    approvedList: [],
-    newItemsQueue: [],
-    currentIndex: -1,
-    ids: new Set(),
-    lastIndexBeforeQueue: null,
+  const dataRef = useRef<{
+    approvedList: any[];
+    newItemsQueue: any[];
+    currentIndex: number;
+    ids: Set<any>;
+    lastIndexBeforeQueue: number | null;
+  });
+   approvedList: [],
+  newItemsQueue: [],
+  currentIndex: -1,
+  ids: new Set(),
+  lastIndexBeforeQueue: null,
   });
 
   const activeSlotRef = useRef(activeSlot);
