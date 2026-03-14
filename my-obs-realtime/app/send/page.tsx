@@ -2,7 +2,6 @@
 import { useState } from "react";
 import { getSupabase } from "@/lib/supabase";
 
-// ✅ Singleton — สร้างครั้งเดียว ไม่ re-create ทุก render
 const supabase = getSupabase();
 
 export default function SendPage() {
@@ -18,17 +17,18 @@ export default function SendPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // ✅ Validate ขนาดไฟล์ (max 5MB)
     if (file.size > 5 * 1024 * 1024) {
       alert("ไฟล์ใหญ่เกิน 5MB กรุณาเลือกรูปที่เล็กกว่านี้");
       return;
     }
 
-    // ✅ Revoke URL เก่าก่อนสร้างใหม่ (ป้องกัน memory leak)
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-
+    // ✅ สร้าง URL ใหม่ก่อน แล้วค่อย revoke ของเก่าใน setState callback
+    const newUrl = URL.createObjectURL(file);
+    setPreviewUrl(prev => {
+      if (prev) URL.revokeObjectURL(prev);
+      return newUrl;
+    });
     setSelectedFile(file);
-    setPreviewUrl(URL.createObjectURL(file));
   };
 
   const clearForm = () => {
@@ -36,8 +36,10 @@ export default function SendPage() {
     setTable("");
     setSocialId("");
     setSelectedFile(null);
-    if (previewUrl) URL.revokeObjectURL(previewUrl);
-    setPreviewUrl(null);
+    setPreviewUrl(prev => {
+      if (prev) URL.revokeObjectURL(prev);
+      return null;
+    });
   };
 
   const handleUploadAndSend = async () => {
@@ -49,10 +51,9 @@ export default function SendPage() {
     setStatus("loading");
 
     try {
-      // 1. ✅ อัปโหลดรูปไปยัง Cloudinary
       const formData = new FormData();
       formData.append("file", selectedFile);
-      formData.append("upload_preset", "my_preset"); // เปลี่ยนเป็น preset ของคุณ
+      formData.append("upload_preset", "my_preset");
 
       const cloudRes = await fetch(
         "https://api.cloudinary.com/v1_1/djdubma5b/image/upload",
@@ -66,7 +67,6 @@ export default function SendPage() {
 
       const imageData = await cloudRes.json();
 
-      // 2. ✅ ส่งไปหาแอดมิน (display_queue) รอ approve ก่อนขึ้นจอ
       const { error } = await supabase.from("display_queue").insert([
         {
           table_no: table.trim(),
@@ -101,7 +101,6 @@ export default function SendPage() {
   return (
     <div className="min-h-screen bg-[#0a0800] flex items-center justify-center p-4 text-white font-sans">
 
-      {/* Background grid */}
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
@@ -111,7 +110,6 @@ export default function SendPage() {
         }}
       />
 
-      {/* Glow blobs */}
       <div
         className="fixed inset-0 pointer-events-none"
         style={{
@@ -130,15 +128,12 @@ export default function SendPage() {
               "0 0 0 1px rgba(201,168,76,0.08), 0 30px 80px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,215,0,0.08)",
           }}
         >
-          {/* Corner ornaments */}
           <span className="absolute top-4 left-4 w-5 h-5 border-t-2 border-l-2 border-[#C9A84C] rounded-tl-sm" />
           <span className="absolute top-4 right-4 w-5 h-5 border-t-2 border-r-2 border-[#C9A84C] rounded-tr-sm" />
           <span className="absolute bottom-4 left-4 w-5 h-5 border-b-2 border-l-2 border-[#C9A84C] rounded-bl-sm" />
           <span className="absolute bottom-4 right-4 w-5 h-5 border-b-2 border-r-2 border-[#C9A84C] rounded-br-sm" />
 
-          {/* Header */}
           <div className="flex flex-col items-center mb-8">
-            {/* ✅ แก้ logo: เพิ่ม overflow-hidden ทั้ง wrapper และ inner div */}
             <div
               className="w-24 h-24 mb-4 rounded-full p-[3px] overflow-hidden flex-shrink-0"
               style={{
@@ -147,14 +142,12 @@ export default function SendPage() {
               }}
             >
               <div className="w-full h-full rounded-full bg-[#0a0800] flex items-center justify-center overflow-hidden">
-                {/* ✅ แก้ img: ใช้ object-cover + จำกัดขนาดไม่ให้ล้น */}
                 <img
                   src="/logo.png"
                   alt="Logo"
                   className="w-full h-full object-contain p-1"
                   style={{ maxWidth: "100%", maxHeight: "100%", display: "block" }}
                   onError={(e) => {
-                    // ✅ Fallback ถ้าไม่มีไฟล์ logo.png
                     e.currentTarget.style.display = "none";
                     e.currentTarget.parentElement!.innerHTML =
                       '<span style="font-size:2rem">👑</span>';
@@ -191,16 +184,20 @@ export default function SendPage() {
             >
               {previewUrl ? (
                 <div className="relative p-2">
+                  {/* ✅ แก้: เปลี่ยนจาก aspect-video object-cover → object-contain + maxHeight */}
                   <img
                     src={previewUrl}
-                    className="w-full aspect-video object-cover rounded-[14px]"
+                    className="w-full object-contain rounded-[14px]"
+                    style={{ maxHeight: "240px", display: "block" }}
                     alt="preview"
                   />
                   <button
                     onClick={() => {
-                      if (previewUrl) URL.revokeObjectURL(previewUrl);
+                      setPreviewUrl(prev => {
+                        if (prev) URL.revokeObjectURL(prev);
+                        return null;
+                      });
                       setSelectedFile(null);
-                      setPreviewUrl(null);
                     }}
                     className="absolute top-0 right-0 w-8 h-8 bg-red-600 rounded-full flex items-center justify-center text-white text-sm font-bold border-2 border-[#110e00] hover:scale-110 transition-transform"
                   >
@@ -329,7 +326,6 @@ export default function SendPage() {
               />
             </div>
 
-            {/* Ornament divider */}
             <div className="flex items-center gap-3 py-1">
               <div className="flex-1 h-px" style={{ background: "linear-gradient(90deg, transparent, rgba(201,168,76,0.2))" }} />
               <div className="w-1.5 h-1.5 rotate-45 border border-[#C9A84C]" />
@@ -378,7 +374,6 @@ export default function SendPage() {
               }}
             >
               <span className="relative z-10">{buttonLabel}</span>
-              {/* Shimmer — แสดงเฉพาะตอน idle */}
               {status === "idle" && (
                 <span
                   className="absolute inset-0 pointer-events-none"
