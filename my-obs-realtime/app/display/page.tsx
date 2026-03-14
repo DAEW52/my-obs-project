@@ -135,7 +135,7 @@ export default function DisplayPage() {
     const DELAY = 15000;
     const tick = () => {
       const data = dataRef.current;
-      let nextItem = null;
+      let nextItem: any = null;
 
       if (data.newItemsQueue.length > 0) {
         data.lastIndexBeforeQueue = data.currentIndex;
