@@ -7,7 +7,7 @@ import dynamic from 'next/dynamic';
 const supabase = getSupabase();
 const QRCode = dynamic(() => import('react-qr-code'), { ssr: false });
 
-const SocialIcon = ({ type }) => {
+const SocialIcon = ({ type }: { type: string }) => {
   const socialType = type?.toLowerCase();
   const iconSize = "44";
 
