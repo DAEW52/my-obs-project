@@ -17,12 +17,21 @@ export default function SendPage() {
     const file = e.target.files?.[0];
     if (!file) return;
 
+    if (
+      file.type === 'image/heic' ||
+      file.type === 'image/heif' ||
+      file.name.toLowerCase().endsWith('.heic') ||
+      file.name.toLowerCase().endsWith('.heif')
+    ) {
+      alert("ไม่รองรับไฟล์ .heic จาก iPhone\nกรุณาไปที่ Settings → Camera → Formats → Most Compatible\nหรือ Screenshot รูปก่อนส่งครับ");
+      return;
+    }
+
     if (file.size > 5 * 1024 * 1024) {
       alert("ไฟล์ใหญ่เกิน 5MB กรุณาเลือกรูปที่เล็กกว่านี้");
       return;
     }
 
-    // ✅ สร้าง URL ใหม่ก่อน แล้วค่อย revoke ของเก่าใน setState callback
     const newUrl = URL.createObjectURL(file);
     setPreviewUrl(prev => {
       if (prev) URL.revokeObjectURL(prev);
@@ -173,6 +182,18 @@ export default function SendPage() {
               className="w-16 h-px mt-3"
               style={{ background: "linear-gradient(90deg, transparent, #C9A84C, transparent)" }}
             />
+            {/* ✅ ข้อความแจ้งเตือน */}
+            <p style={{
+              fontFamily: "Sarabun, sans-serif",
+              fontSize: "16px",
+              color: "#7a6a40",
+              textAlign: "center",
+              marginTop: "10px",
+              letterSpacing: "0.5px",
+              lineHeight: 1.6,
+            }}>
+              ⚠️ โปรดหลีกเลี่ยงคำหยาบและภาพโป๊เปลือย
+            </p>
           </div>
 
           <div className="space-y-4">
@@ -184,7 +205,6 @@ export default function SendPage() {
             >
               {previewUrl ? (
                 <div className="relative p-2">
-                  {/* ✅ แก้: เปลี่ยนจาก aspect-video object-cover → object-contain + maxHeight */}
                   <img
                     src={previewUrl}
                     className="w-full object-contain rounded-[14px]"
@@ -222,13 +242,13 @@ export default function SendPage() {
                     แตะเพื่อเลือกรูปภาพ
                   </span>
                   <span className="text-[10px]" style={{ color: "#4a3d20" }}>
-                    ขนาดไม่เกิน 5MB
+                    ขนาดไม่เกิน 5MB · ไม่รองรับ .heic
                   </span>
                   <input
                     type="file"
                     className="hidden"
                     onChange={handleFileChange}
-                    accept="image/*"
+                    accept="image/jpeg,image/png,image/gif,image/webp"
                   />
                 </label>
               )}

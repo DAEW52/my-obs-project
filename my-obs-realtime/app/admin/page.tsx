@@ -322,7 +322,7 @@ export default function AdminPage() {
       {/* Image Preview Modal */}
       {previewUrl && (
         <div onClick={() => setPreviewUrl(null)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.92)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center" }}>
-          <img src={previewUrl} alt="Preview" style={{ maxWidth: "90%", maxHeight: "90vh", borderRadius: "16px", objectFit: "contain" }} onClick={e => e.stopPropagation()} />
+          <img src={previewUrl} alt="" style={{ maxWidth: "90%", maxHeight: "90vh", borderRadius: "16px", objectFit: "contain" }} onClick={e => e.stopPropagation()} />
           <button onClick={() => setPreviewUrl(null)} style={{ position: "absolute", top: 20, right: 20, background: "rgba(255,255,255,0.1)", border: "none", color: "white", borderRadius: "50%", width: 40, height: 40, fontSize: 20, cursor: "pointer" }}>×</button>
         </div>
       )}
@@ -373,10 +373,8 @@ export default function AdminPage() {
 
       <main style={{ maxWidth: "1400px", margin: "0 auto", padding: "32px 24px", position: "relative", zIndex: 10 }}>
 
-        {/* ===== QUEUE ===== */}
         {activeTab === "queue" && (
           <>
-            {/* Stats */}
             <div style={{ display: "flex", gap: "16px", marginBottom: "24px" }}>
               {[{ label: "ทั้งหมด", count: messages.length, key: "all" }, { label: "รออนุมัติ", count: pendingCount, key: "pending" }, { label: "อนุมัติแล้ว", count: approvedCount, key: "approved" }].map(({ label, count, key }) => (
                 <button key={key} onClick={() => setFilter(key as any)} style={{ flex: 1, padding: "16px", borderRadius: "16px", cursor: "pointer", background: filter === key ? "linear-gradient(135deg, #8B6914 0%, #FFD700 45%, #C9A84C 70%, #FFD700 100%)" : "#110e00", border: `1px solid ${filter === key ? "transparent" : "rgba(201,168,76,0.2)"}`, boxShadow: filter === key ? "0 4px 20px rgba(201,168,76,0.3)" : "none" }}>
@@ -386,7 +384,6 @@ export default function AdminPage() {
               ))}
             </div>
 
-            {/* Toolbar */}
             <div style={{ display: "flex", gap: "12px", marginBottom: "16px", flexWrap: "wrap" }}>
               <div style={{ flex: 1, minWidth: "180px", position: "relative" }}>
                 <span style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)", color: "#5a4d2a" }}>🔍</span>
@@ -402,7 +399,6 @@ export default function AdminPage() {
               </button>
             </div>
 
-            {/* Bulk Actions */}
             {selectedIds.size > 0 && (
               <div style={{ display: "flex", gap: "12px", marginBottom: "16px", padding: "16px", borderRadius: "16px", background: "#1a1400", border: "1px solid rgba(201,168,76,0.25)", alignItems: "center" }}>
                 <span style={{ color: "#C9A84C", fontSize: "13px" }}>เลือก {selectedIds.size} ข้อความ</span>
@@ -412,14 +408,12 @@ export default function AdminPage() {
               </div>
             )}
 
-            {/* Divider */}
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
               <div style={{ flex: 1, height: "1px", background: "linear-gradient(90deg, rgba(201,168,76,0.3), transparent)" }} />
               <div style={{ width: 6, height: 6, transform: "rotate(45deg)", border: "1px solid #C9A84C" }} />
               <div style={{ flex: 1, height: "1px", background: "linear-gradient(270deg, rgba(201,168,76,0.3), transparent)" }} />
             </div>
 
-            {/* Grid Cards */}
             {filtered.length === 0 ? (
               <div style={{ textAlign: "center", padding: "80px 0", borderRadius: "20px", background: "#110e00", border: "2px dashed rgba(201,168,76,0.15)", color: "#3d3420" }}>ไม่มีข้อความในหมวดนี้</div>
             ) : (
@@ -430,18 +424,20 @@ export default function AdminPage() {
                   const isPending = msg.status !== "approved";
                   return (
                     <div key={msg.id} className={`msg-card ${isPending ? "pending" : "approved"} ${isSelected ? "selected" : ""}`}>
-
-                      {/* Image */}
                       <div style={{ position: "relative" }}>
                         {msg.image_url
-                          ? <img src={msg.image_url} alt="" className="img-thumb" onClick={() => setPreviewUrl(msg.image_url!)} />
+                          ? <img
+                              src={msg.image_url}
+                              alt=""
+                              className="img-thumb"
+                              // ✅ แก้แล้ว: stopPropagation ป้องกัน bubble
+                              onClick={(e) => { e.stopPropagation(); setPreviewUrl(msg.image_url!); }}
+                            />
                           : <div className="no-img-box">🖼️</div>
                         }
-                        {/* Checkbox */}
-                        <button onClick={() => toggleSelect(msg.id)} style={{ position: "absolute", top: 8, right: 8, width: 26, height: 26, borderRadius: "50%", background: isSelected ? "#FFD700" : "rgba(0,0,0,0.55)", border: `2px solid ${isSelected ? "#FFD700" : "rgba(255,255,255,0.4)"}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: isSelected ? "#1a0f00" : "white", fontWeight: 900 }}>
+                        <button onClick={(e) => { e.stopPropagation(); toggleSelect(msg.id); }} style={{ position: "absolute", top: 8, right: 8, width: 26, height: 26, borderRadius: "50%", background: isSelected ? "#FFD700" : "rgba(0,0,0,0.55)", border: `2px solid ${isSelected ? "#FFD700" : "rgba(255,255,255,0.4)"}`, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "11px", color: isSelected ? "#1a0f00" : "white", fontWeight: 900 }}>
                           {isSelected ? "✓" : ""}
                         </button>
-                        {/* Status pill */}
                         <div style={{ position: "absolute", top: 8, left: 8 }}>
                           {isPending
                             ? <span style={{ padding: "3px 8px", borderRadius: "6px", fontSize: "10px", fontWeight: 700, background: "rgba(220,38,38,0.88)", color: "white" }}>รออนุมัติ</span>
@@ -450,9 +446,7 @@ export default function AdminPage() {
                         </div>
                       </div>
 
-                      {/* Body */}
                       <div style={{ padding: "12px" }}>
-                        {/* Meta row */}
                         <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "8px", flexWrap: "wrap" }}>
                           <span style={{ padding: "2px 10px", borderRadius: "9999px", fontSize: "11px", fontWeight: 900, background: "linear-gradient(135deg, #8B6914, #FFD700)", color: "#1a0f00", fontFamily: "'Playfair Display', Georgia, serif" }}>T{msg.table_no}</span>
                           {msg.social_id && <span style={{ fontSize: "11px", color: "#7a6a40" }}>{msg.social_type}: <span style={{ color: "#C9A84C" }}>{msg.social_id}</span></span>}
@@ -464,21 +458,18 @@ export default function AdminPage() {
                           </div>
                         </div>
 
-                        {/* Message bubble */}
                         <div style={{ background: isPending ? "rgba(220,38,38,0.07)" : "rgba(201,168,76,0.06)", borderRadius: "10px", padding: "10px", marginBottom: "10px", borderLeft: `3px solid ${isPending ? "rgba(220,38,38,0.4)" : "rgba(201,168,76,0.4)"}` }}>
                           <p style={{ color: "#e8d5a0", fontSize: "13px", lineHeight: 1.6, margin: 0, fontFamily: "Sarabun, sans-serif" }}>
                             {msg.message || <span style={{ color: "#3d3420" }}>ไม่มีข้อความ</span>}
                           </p>
                         </div>
 
-                        {/* Badges + time */}
                         <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", alignItems: "center", marginBottom: "10px" }}>
                           {hasBlacklisted && <span style={{ padding: "2px 7px", borderRadius: "5px", fontSize: "10px", fontWeight: 700, background: "rgba(239,68,68,0.1)", border: "1px solid rgba(239,68,68,0.3)", color: "#ef4444" }}>⚠️ คำต้องห้าม</span>}
                           {(msg.priority ?? 0) > 0 && <span style={{ padding: "2px 7px", borderRadius: "5px", fontSize: "10px", fontWeight: 700, background: "rgba(255,215,0,0.1)", border: "1px solid rgba(255,215,0,0.3)", color: "#FFD700" }}>VIP P{msg.priority}</span>}
                           <span style={{ marginLeft: "auto", fontSize: "10px", color: "#3d3420" }}>{new Date(msg.created_at).toLocaleTimeString("th-TH")}</span>
                         </div>
 
-                        {/* Actions */}
                         <div style={{ display: "grid", gridTemplateColumns: isPending ? "1fr 1fr auto" : "1fr auto", gap: "6px" }}>
                           {isPending && (
                             <button className="act-btn" onClick={() => approveMessage(msg.id)}
@@ -504,7 +495,6 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* ===== STATS ===== */}
         {activeTab === "stats" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.5rem", fontWeight: 900, fontStyle: "italic", color: "#fff", letterSpacing: "2px", margin: 0 }}>สถิติรายวัน</h2>
@@ -538,7 +528,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ===== AUDIT LOGS ===== */}
         {activeTab === "logs" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -564,7 +553,6 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ===== SETTINGS ===== */}
         {activeTab === "settings" && (
           <div style={{ display: "flex", flexDirection: "column", gap: "20px" }}>
             <h2 style={{ fontFamily: "'Playfair Display', Georgia, serif", fontSize: "1.5rem", fontWeight: 900, fontStyle: "italic", color: "#fff", letterSpacing: "2px", margin: 0 }}>ตั้งค่าระบบ</h2>
