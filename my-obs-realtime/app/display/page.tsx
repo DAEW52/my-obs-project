@@ -65,7 +65,7 @@ const SocialIcon = ({ type }: { type: string }) => {
 
 export default function DisplayPage() {
   const [uploadUrl, setUploadUrl] = useState('');
-  const [currentContent, setCurrentContent] = useState(null);
+  const [const [currentContent, setCurrentContent] = useState<any>(null);
   const [isIdle, setIsIdle] = useState(true);
   const [countdown, setCountdown] = useState(0);
   const [imageSlots, setImageSlots] = useState([
