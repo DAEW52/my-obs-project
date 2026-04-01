@@ -189,7 +189,7 @@ export default function DisplayPage() {
   return (
     <div style={{ position: 'relative', width: '100vw', height: '100vh', overflow: 'hidden', backgroundColor: '#0a0800' }}>
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700;1,900&family=Sarabun:wght@300;400;600&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@300;400;600;700&family=Noto+Color+Emoji&family=Playfair+Display:ital,wght@0,700;1,700;1,900&family=Sarabun:wght@300;400;600&display=swap');
 
         .image-slot {
           position: absolute; top: 0; left: 0;
@@ -375,11 +375,15 @@ export default function DisplayPage() {
               width: '80px', height: '2px', margin: '0 auto 1rem',
               background: 'linear-gradient(90deg, transparent, #C9A84C, transparent)',
             }} />
+            {/* ✅ เปลี่ยนฟอนต์เป็น Noto Sans Thai + Noto Color Emoji */}
             <h1 style={{
-              fontFamily: "'Playfair Display', Georgia, serif",
-              fontStyle: 'italic', fontWeight: 700,
-              color: 'white', fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
-              lineHeight: 1.3, margin: 0,
+              fontFamily: "'Noto Sans Thai', 'Noto Color Emoji', sans-serif",
+              fontStyle: 'normal',
+              fontWeight: 700,
+              color: 'white',
+              fontSize: 'clamp(2.5rem, 5vw, 4.5rem)',
+              lineHeight: 1.5,
+              margin: 0,
               textShadow: '0 2px 20px rgba(0,0,0,0.8), -3px -3px 0 rgba(0,0,0,0.5), 3px 3px 0 rgba(0,0,0,0.5)',
             }}>
               "{currentContent.message}"
